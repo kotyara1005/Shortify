@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    .navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse bg-primary">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Shortify</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid text-center">
+  <h1>Shortify</h1>
+  <br/>
+  <div class="content row">
+    <div class="col-md-2"></div>
+
+    <form class="form" action="." method="GET" role="form">
+      <div class="col-md-8">
+        <div class="input-group input-group-lg">
+          <input type="text" class="form-control" placeholder="Enter link..." id="url_input">
+          <span class="input-group-btn">
+            <button class="btn btn-secondary" type="button" id="btn">Get short!</button>
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script language="JavaScript">
+$( "#btn" ).click(function() {
+  $.ajax({
+      url: '/',
+      dataType: 'json',
+      type: 'post',
+      contentType: 'application/json',
+      data: JSON.stringify( {"url": $("#url_input").val()} ),
+      processData: false,
+      success: function( data, textStatus, jQxhr ){
+          console.log( data['url'] );
+          $("#url_input").val( data['url'] );
+      },
+      error: function( jqXhr, textStatus, errorThrown ){
+          console.log( errorThrown );
+      }
+  });
+});
+</script>
+
+</body>
+</html>
