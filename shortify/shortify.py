@@ -1,4 +1,5 @@
 import hashlib
+from urllib.parse import urlparse
 
 from aiohttp import web
 from aredis import StrictRedis
@@ -18,6 +19,11 @@ class RedisBasedKeyValueStorage:
         return await self._client.get('urls:' + key)
 
 
+def is_valid_url(url):
+    parsed_url = urlparse(url)
+    return bool(parsed_url.scheme and parsed_url.netloc)
+
+
 class ShorterView:
     def __init__(self, storage, ttl=60):
         self._storage = storage
@@ -32,10 +38,12 @@ class ShorterView:
     async def post_url(self, request):
         data = await request.json()
         url = data['url']
+        if not is_valid_url(url):
+            return web.json_response(status=400)
         md5 = hashlib.md5(url.encode()).hexdigest()
         await self._storage.set(md5, url, ttl=self._ttl)
         return web.json_response(
-            dict(url='http://127.0.0.1:8080/api/{}'.format(md5))
+            dict(path='/api/{}'.format(md5))
         )
 
 
@@ -51,3 +59,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# TODO nginx
+# TODO hash
+# TODO tests
+# TODO views
+# TODO graphite

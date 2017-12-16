@@ -68,8 +68,8 @@ $( "#btn" ).click(function() {
       data: JSON.stringify( {"url": $("#url_input").val()} ),
       processData: false,
       success: function( data, textStatus, jQxhr ){
-          console.log( data['url'] );
-          $("#url_input").val( data['url'] );
+          console.log( data['path'] );
+          $("#url_input").val( window.location.origin + data['path'] );
       },
       error: function( jqXhr, textStatus, errorThrown ){
           console.log( errorThrown );
