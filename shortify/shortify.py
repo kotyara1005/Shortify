@@ -6,7 +6,7 @@ from aredis import StrictRedis
 
 class RedisBasedKeyValueStorage:
     def __init__(self):
-        self._client = StrictRedis(host='127.0.0.1', port=6379, db=0)
+        self._client = StrictRedis(host='redis', port=6379, db=0)
 
     async def set(self, key, value, ttl=None):
         key = 'urls:' + key
@@ -46,7 +46,7 @@ def main():
     app.router.add_get('/api/{md5}', view.get_url)
     app.router.add_post('/', view.post_url)
     app.router.add_static('/', '.')
-    web.run_app(app, host='127.0.0.1', port=8080)
+    web.run_app(app, host='0.0.0.0', port=80)
 
 
 if __name__ == '__main__':
