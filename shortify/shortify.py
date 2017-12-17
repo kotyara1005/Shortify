@@ -5,6 +5,9 @@ from aiohttp import web
 from aredis import StrictRedis
 
 
+MAIN_PAGE = open('./index.html').read()
+
+
 class RedisBasedKeyValueStorage:
     def __init__(self):
         self._client = StrictRedis(host='redis', port=6379, db=0)
@@ -30,10 +33,11 @@ class ShorterView:
         self._ttl = ttl
 
     async def get_url(self, request):
-        md5 = request.match_info['md5']
+        md5 = request.match_info.get('md5')
+        if md5 is None:
+            return web.Response(text=MAIN_PAGE, content_type='text/html')
         url = await self._storage.get(md5)
-        rv = web.HTTPFound(url.decode())
-        return rv
+        return web.HTTPFound(url.decode())
 
     async def post_url(self, request):
         data = await request.json()
@@ -43,7 +47,7 @@ class ShorterView:
         md5 = hashlib.md5(url.encode()).hexdigest()
         await self._storage.set(md5, url, ttl=self._ttl)
         return web.json_response(
-            dict(path='/api/{}'.format(md5))
+            dict(path='/{}'.format(md5))
         )
 
 
@@ -51,9 +55,9 @@ def main():
     storage = RedisBasedKeyValueStorage()
     view = ShorterView(storage)
     app = web.Application()
-    app.router.add_get('/api/{md5}', view.get_url)
+    app.router.add_get('/{md5}', view.get_url)
+    app.router.add_get('/', view.get_url)
     app.router.add_post('/', view.post_url)
-    app.router.add_static('/', '.')
     web.run_app(app, host='0.0.0.0', port=80)
 
 
