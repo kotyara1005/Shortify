@@ -4,13 +4,13 @@ from urllib.parse import urlparse
 from aiohttp import web
 from aredis import StrictRedis
 
-
 MAIN_PAGE = open('./index.html').read()
+REDIS_HOST = 'redis'
 
 
 class RedisBasedKeyValueStorage:
-    def __init__(self):
-        self._client = StrictRedis(host='redis', port=6379, db=0)
+    def __init__(self, host):
+        self._client = StrictRedis(host=host, port=6379, db=0)
 
     async def set(self, key, value, ttl=None):
         key = 'urls:' + key
@@ -51,13 +51,18 @@ class ShorterView:
         )
 
 
-def main():
-    storage = RedisBasedKeyValueStorage()
+def create_app(host):
+    storage = RedisBasedKeyValueStorage(host)
     view = ShorterView(storage)
     app = web.Application()
     app.router.add_get('/{md5}', view.get_url)
     app.router.add_get('/', view.get_url)
     app.router.add_post('/', view.post_url)
+    return app
+
+
+def main():
+    app = create_app(REDIS_HOST)
     web.run_app(app, host='0.0.0.0', port=80)
 
 
@@ -66,6 +71,5 @@ if __name__ == '__main__':
 
 # TODO nginx
 # TODO hash
-# TODO tests
 # TODO views
 # TODO graphite
