@@ -12,7 +12,7 @@ def cli(loop, test_client):
 async def test_shotify_url(cli):
     resp = await cli.post('/', json={'url': 'http://example.com/qwe'})
     assert resp.status == 200
-    assert (await resp.json())['path'] == '/26d1ddaeeed3c38337e00a34d95b98af'
+    assert (await resp.json())['path'] == '/5086d044'
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-import hashlib
+import binascii
 from urllib.parse import urlparse
 
 from aiohttp import web
@@ -33,10 +33,10 @@ class ShorterView:
         self._ttl = ttl
 
     async def get_url(self, request):
-        md5 = request.match_info.get('md5')
-        if md5 is None:
+        hash_ = request.match_info.get('hash')
+        if hash_ is None:
             return web.Response(text=MAIN_PAGE, content_type='text/html')
-        url = await self._storage.get(md5)
+        url = await self._storage.get(hash_)
         return web.HTTPFound(url.decode())
 
     async def post_url(self, request):
@@ -44,10 +44,10 @@ class ShorterView:
         url = data['url']
         if not is_valid_url(url):
             return web.json_response(status=400)
-        md5 = hashlib.md5(url.encode()).hexdigest()
-        await self._storage.set(md5, url, ttl=self._ttl)
+        hash_ = hex(binascii.crc32(url.encode()))[2:]
+        await self._storage.set(hash_, url, ttl=self._ttl)
         return web.json_response(
-            dict(path='/{}'.format(md5))
+            dict(path='/{}'.format(hash_))
         )
 
 
@@ -55,7 +55,7 @@ def create_app(host):
     storage = RedisBasedKeyValueStorage(host)
     view = ShorterView(storage)
     app = web.Application()
-    app.router.add_get('/{md5}', view.get_url)
+    app.router.add_get('/{hash}', view.get_url)
     app.router.add_get('/', view.get_url)
     app.router.add_post('/', view.post_url)
     return app
@@ -69,7 +69,5 @@ def main():
 if __name__ == '__main__':
     main()
 
-# TODO nginx
-# TODO hash
 # TODO views
-# TODO graphite
+# TODO monitoring
