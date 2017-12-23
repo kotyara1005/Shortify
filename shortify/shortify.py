@@ -64,7 +64,7 @@ def create_app(config):
 
 
 def main():
-    from . import config
+    import config
     app = create_app(config)
     web.run_app(app, host='0.0.0.0', port=80)
 
