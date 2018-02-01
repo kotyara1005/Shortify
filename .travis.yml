@@ -6,7 +6,7 @@ python:
   - 3.6
 
 install:
-  - pip install codecov,pytest
+  - pip install codecov pytest
   - pip install -r ./shortify/requirements.txt
 
 script:
