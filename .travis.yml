@@ -10,7 +10,7 @@ install:
   - pip install -r ./shortify/requirements.txt
 
 script:
-  - coverage run ./shortify/tests.py
+  - coverage run ./shortify/tests.py -m py.test
 
 after_success:
   - codecov
