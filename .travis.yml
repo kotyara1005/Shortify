@@ -10,7 +10,7 @@ install:
   - pip install -r ./shortify/requirements.txt
 
 script:
-  - pytest --cov=./shortify/tests.py
+  - pytest --cov=./shortify/ ./shortify/tests.py
 
 after_success:
   - codecov
