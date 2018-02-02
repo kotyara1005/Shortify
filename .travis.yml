@@ -6,11 +6,11 @@ python:
   - 3.6
 
 install:
-  - pip install codecov pytest
+  - pip install codecov pytest pytest-cov
   - pip install -r ./shortify/requirements.txt
 
 script:
-  - coverage run ./shortify/tests.py -m py.test
+  - pytest --cov=./shortify/tests.py
 
 after_success:
   - codecov
