@@ -17,6 +17,7 @@ CONFIG = AttrDict(MAIN_PAGE='qwe', REDIS_HOST='127.0.0.1', RECORD_TTL=2)
 
 @pytest.fixture
 def cli(loop, test_client):
+    asyncio.set_event_loop(loop)
     return loop.run_until_complete(
         test_client(shortify.create_app(CONFIG))
     )
