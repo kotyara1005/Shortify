@@ -3,7 +3,7 @@ services:
   redis:
     image: redis
   web:
-    build: .
+    build: ./shortiy
     ports:
       - "80:80"
     links:
