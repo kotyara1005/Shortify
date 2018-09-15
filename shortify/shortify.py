@@ -1,7 +1,7 @@
 import binascii
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
-from aiohttp import web
+from aiohttp import web, client
 from aredis import StrictRedis
 
 
@@ -19,9 +19,26 @@ class RedisBasedKeyValueStorage:
         return await self._client.get('urls:' + key)
 
 
+class BlackListApi:
+    def __init__(self, base_url, session):
+        self.base_url = base_url
+        self._session = session
+
+    async def is_blacklisted(self, name, entry):
+        url = urljoin(self.base_url, '/is_blacklisted')
+        data = {'name': name, 'entry': entry}
+        async with self._session.post(url, json=data) as response:
+            return (await response.json())['result']
+
+
 def is_valid_url(url):
     parsed_url = urlparse(url)
     return bool(parsed_url.scheme and parsed_url.netloc)
+
+
+async def is_blacklisted_domain(api, url):
+    parsed_url = urlparse(url)
+    return await api.is_blacklisted('domain', parsed_url.domain)
 
 
 class ShorterView(web.View):
@@ -40,8 +57,12 @@ class ShorterView(web.View):
     async def post(self):
         data = await self.request.json()
         url = data['url']
+
         if not is_valid_url(url):
             return web.json_response({}, status=400)
+        if await is_blacklisted_domain(self.request.app.black_list, url):
+            return web.HTTPFound(self.request.app.config.BLACKLIST_URL)
+
         hash_ = hex(binascii.crc32(url.encode()))[2:]
         await self.request.app.storage.set(hash_, url)
         return web.json_response(
@@ -52,11 +73,14 @@ class ShorterView(web.View):
 def create_app(config):
     app = web.Application()
     app.config = config
-    storage = RedisBasedKeyValueStorage(
+    app.storage = RedisBasedKeyValueStorage(
         app.config.REDIS_HOST,
         app.config.RECORD_TTL
     )
-    app.storage = storage
+    app.black_list = BlackListApi(
+        base_url='http://black_list/',
+        session=client.ClientSession(),
+    )
     app.router.add_get('/{hash}', ShorterView)
     app.router.add_get('/', ShorterView)
     app.router.add_post('/', ShorterView)
@@ -64,7 +88,7 @@ def create_app(config):
 
 
 def main():
-    import config
+    from . import config
     app = create_app(config)
     web.run_app(app, host='0.0.0.0', port=80)
 
@@ -72,4 +96,6 @@ def main():
 if __name__ == '__main__':
     main()
 
+# TODO swagger
 # TODO monitoring
+# TODO backoffice
