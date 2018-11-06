@@ -6,8 +6,8 @@ from aredis import StrictRedis
 
 
 class RedisBasedKeyValueStorage:
-    def __init__(self, host, ttl):
-        self._client = StrictRedis(host=host, port=6379, db=0)
+    def __init__(self, url, ttl):
+        self._client = StrictRedis.from_url(url)
         self._ttl = ttl
 
     async def set(self, key, value):
@@ -38,7 +38,8 @@ def is_valid_url(url):
 
 async def is_blacklisted_domain(api, url):
     parsed_url = urlparse(url)
-    return await api.is_blacklisted('domain', parsed_url.domain)
+    # TODO
+    return await api.is_blacklisted('domain', parsed_url.netloc)
 
 
 class ShorterView(web.View):
@@ -74,7 +75,7 @@ def create_app(config):
     app = web.Application()
     app.config = config
     app.storage = RedisBasedKeyValueStorage(
-        app.config.REDIS_HOST,
+        app.config.REDIS_URL,
         app.config.RECORD_TTL
     )
     app.black_list = BlackListApi(

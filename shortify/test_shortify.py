@@ -12,7 +12,15 @@ class AttrDict(dict):
     __delattr__ = dict.__delitem__
 
 
-CONFIG = AttrDict(MAIN_PAGE='qwe', REDIS_HOST='127.0.0.1', RECORD_TTL=2)
+CONFIG = AttrDict(
+    MAIN_PAGE='qwe',
+    REDIS_URL='redis://127.0.0.1:6666/0',
+    RECORD_TTL=2,
+)
+
+
+async def async_result(result):
+    return result
 
 
 @pytest.fixture
@@ -20,6 +28,14 @@ def cli(loop, test_client):
     asyncio.set_event_loop(loop)
     return loop.run_until_complete(
         test_client(shortify.create_app(CONFIG))
+    )
+
+
+@pytest.fixture(autouse=True)
+def all_is_not_blacklisted(cli, mocker):
+    mocker.patch(
+        'shortify.is_blacklisted_domain',
+        return_value=async_result(False),
     )
 
 
