@@ -6,7 +6,7 @@ python:
   - 3.6
 
 install:
-  - pip install -r ./requirement.tests.txt
+  - pip install -r ./requirements.tests.txt
   - pip install -r ./shortify/requirements.txt
 
 script:
