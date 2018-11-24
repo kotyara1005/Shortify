@@ -12,12 +12,12 @@ class AttrDict(dict):
     __delattr__ = dict.__delitem__
 
 
-CONFIG = AttrDict(REDIS_URL='redis://127.0.0.1/0')
+CONFIG = AttrDict(REDIS_URL='redis://127.0.0.1:6666/0')
 
 
 @pytest.fixture(autouse=True)
 def clean_local_redis(loop):
-    redis = StrictRedis.from_url('redis://127.0.0.1')
+    redis = StrictRedis.from_url(CONFIG.REDIS_URL)
     loop.run_until_complete(redis.flushall())
 
 
