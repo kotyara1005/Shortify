@@ -11,7 +11,7 @@ install:
   - pip install -r ./blacklist/requirements.txt
 
 script:
-  - pytest --cov=./shortify/ --cov=./blacklist/ .
+  - pytest --cov=shortify --cov=blacklist .
 
 after_success:
   - codecov
