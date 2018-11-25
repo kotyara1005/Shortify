@@ -24,14 +24,14 @@ async def async_result(result):
 
 
 @pytest.fixture
-def cli(loop, test_client):
+def cli(loop, aiohttp_client):
     asyncio.set_event_loop(loop)
     return loop.run_until_complete(
-        test_client(shortify.create_app(CONFIG))
+        aiohttp_client(shortify.create_app(CONFIG))
     )
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def all_is_not_blacklisted(cli, mocker):
     mocker.patch(
         'shortify.is_blacklisted_domain',
@@ -39,14 +39,14 @@ def all_is_not_blacklisted(cli, mocker):
     )
 
 
-async def test_shotify_url(cli):
+async def test_shotify_url(cli, all_is_not_blacklisted):
     response = await cli.post('/', json={'url': 'http://example.com/qwe'})
     assert response.status == 200
     assert (await response.json())['path'] == '/5086d044'
 
 
 @pytest.fixture
-def short_url(cli, loop):
+def short_url(cli, loop, all_is_not_blacklisted):
     response = loop.run_until_complete(
         cli.post('/', json={'url': 'http://example.com/qwe'})
     )

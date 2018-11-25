@@ -19,10 +19,25 @@ class RedisBasedKeyValueStorage:
         return await self._client.get('urls:' + key)
 
 
+class LazySession:
+    """
+    aiohttp warning sad that create session out of loop context is a bad idea
+    """
+    def __init__(self):
+        self.name = None
+
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, instance, owner):
+        setattr(instance, self.name, client.ClientSession())
+
+
 class BlackListApi:
-    def __init__(self, base_url, session):
+    _session = LazySession()
+
+    def __init__(self, base_url):
         self.base_url = base_url
-        self._session = session
 
     async def is_blacklisted(self, name, entry):
         url = urljoin(self.base_url, '/is_blacklisted')
@@ -39,7 +54,8 @@ def is_valid_url(url):
 async def is_blacklisted_domain(api, url):
     parsed_url = urlparse(url)
     # TODO
-    return await api.is_blacklisted('domain', parsed_url.netloc)
+    rv = await api.is_blacklisted('domain', parsed_url.netloc)
+    return rv
 
 
 class ShorterView(web.View):
@@ -80,7 +96,6 @@ def create_app(config):
     )
     app.black_list = BlackListApi(
         base_url='http://black_list/',
-        session=client.ClientSession(),
     )
     app.router.add_get('/{hash}', ShorterView)
     app.router.add_get('/', ShorterView)
@@ -97,6 +112,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-# TODO swagger
-# TODO monitoring
 # TODO backoffice
