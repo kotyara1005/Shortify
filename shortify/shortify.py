@@ -69,6 +69,8 @@ class ShorterView(web.View):
         url = await self.request.app.storage.get(hash_)
         if url is None:
             return web.HTTPNotFound()
+        elif await is_blacklisted_domain(self.request.app.black_list, url):
+            return web.HTTPFound(self.request.app.config.BLACKLIST_URL)
         return web.HTTPFound(url.decode())
 
     async def post(self):
@@ -111,5 +113,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# TODO backoffice

@@ -6,7 +6,6 @@ services:
     build: ./shortiy
     ports:
       - "80:80"
-    links:
-    - redis
-    depends_on:
-    - redis
+  blacklist:
+    build: ./blacklist
+
