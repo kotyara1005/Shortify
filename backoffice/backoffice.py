@@ -1,10 +1,8 @@
 from aiohttp import web, client
 
-MAIN_PAGE = open('./html/index.html').read()
-LOGIN_PAGE = open('./html/login.html').read()
+MAIN_PAGE = open('./index.html').read()
 
 # TODO blacklist api
-# TODO add login required
 
 
 class BlackListApi:
@@ -52,25 +50,12 @@ class IndexView(web.View):
         return web.HTTPFound('/')
 
 
-class LoginView(web.View):
-    async def get(self):
-        return web.Response(
-            text=LOGIN_PAGE,
-            content_type='text/html'
-        )
-
-    async def post(self):
-        data = await self.request.json()
-        return web.HTTPFound('/')
-
-
 def create_app():
     app = web.Application()
     app.black_list = BlackListApi(
         base_url='http://black_list/',
     )
     app.router.add_view('/', IndexView)
-    app.router.add_view('/login', LoginView)
     app.router.add_view('/blacklist', BlacklistView)
     app.router.add_view('/blacklist/delete', BlacklistDeleteView)
     return app
