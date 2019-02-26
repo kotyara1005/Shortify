@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Blacklist</h2>
+        <div class="row">
+            <form class="form-inline" method="post">
+              <label for="inputPassword2" class="mb-2" >Enter domain</label>
+              <div class="form-group mx-sm-3 mb-2">
+                <input name="domain" type="text" class="form-control" id="inputPassword2" placeholder="Domain">
+              </div>
+              <button type="submit" class="btn btn-primary mb-2">Add</button>
+            </form>
+        <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Domain</th>
+              <th scope="col">Delete</th>
+            </tr>
+          </thead>
+          <tbody id="table"></tbody>
+        </table>
+        </div>
+        </div>
+    </div>
+
+<script language="JavaScript">
+  $.ajax({
+      url: '/blacklist',
+      type: 'get',
+      contentType: 'application/json',
+      processData: false,
+      success: function( data, textStatus, jQxhr ){
+          console.log( data );
+
+          var table = $('#table');
+          for (var i = 0; i<data['result'].length; i++) {
+              var domain = encodeURI(data['result'][i]);
+              table.append('<tr><td>' + domain + '</td><td><form class="form-inline" action="/blacklist/delete" method="post"><input type="hidden" name="domain" value="' + domain + '"><button type="submit" class="btn btn-danger btn-sm">Delete</button></form></td></tr>')
+          }
+      },
+      error: function( jqXhr, textStatus, errorThrown ){
+          console.log( errorThrown );
+      }
+  });
+</script>
+</body>
+</html>
